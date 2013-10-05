@@ -33,11 +33,7 @@ func main() {
 	}
 
 	if !ok {
-		dictR, err := UpdateDict()
-		if err != nil {
-			panic(err)
-		}
-		dict, err = ioutil.ReadAll(dictR)
+		dict, err = UpdateDict()
 		if err != nil {
 			panic(err)
 		}
@@ -47,7 +43,7 @@ func main() {
 	// TODO: Do something with the dict (parse it for definitions)
 }
 
-func UpdateDict() (io.Reader, error) {
+func UpdateDict() ([]byte, error) {
 	fmt.Printf("Updating dictionary from %s\n", dictZipFile)
 
 	resp, err := http.Get(dictZipFile)
@@ -81,8 +77,10 @@ func UpdateDict() (io.Reader, error) {
 	}
 	defer dict.Close()
 
+	dictData, err := ioutil.ReadAll(io.LimitReader(dict, maxDictSize))
+
 	fmt.Println("Done")
-	return io.LimitReader(dict, maxDictSize), err
+	return dictData, err
 }
 
 func GetProgressFunc(total int64) func(int64) {
